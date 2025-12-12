@@ -1,0 +1,22 @@
+date,campaign,channel,spend,clicks,signups,revenue
+2025-01-01,Launch A,Search,420,950,120,3100
+2025-01-01,Launch A,Social,260,780,90,2100
+2025-01-01,Launch A,Email,150,430,70,1800
+2025-01-02,Launch A,Search,450,1005,130,3250
+2025-01-02,Launch A,Social,240,720,80,1950
+2025-01-02,Launch A,Email,160,410,65,1700
+2025-01-03,Launch A,Search,390,880,110,2950
+2025-01-03,Launch A,Social,230,690,85,2050
+2025-01-03,Launch A,Email,140,395,60,1650
+2025-01-04,Retargeting B,Search,310,700,95,2600
+2025-01-04,Retargeting B,Social,210,640,88,2300
+2025-01-04,Retargeting B,Email,130,360,55,1500
+2025-01-05,Retargeting B,Search,330,740,100,2720
+2025-01-05,Retargeting B,Social,220,660,90,2380
+2025-01-05,Retargeting B,Email,135,370,58,1550
+2025-01-06,Brand Always-On,Search,280,620,80,2400
+2025-01-06,Brand Always-On,Social,190,580,75,2200
+2025-01-06,Brand Always-On,Email,120,340,50,1450
+2025-01-07,Brand Always-On,Search,295,650,82,2480
+2025-01-07,Brand Always-On,Social,200,600,78,2250
+2025-01-07,Brand Always-On,Email,125,350,52,1480

@@ -1,33 +1,95 @@
 # Dashboard configuration file
 
 # Path to the CSV data source (relative to project root by default)
-data_source: data/sample_sales.csv
+# data_source: data/sample_sales.csv
+data_source: data/marketing_campaign_performance.csv
 
 # Name of the date column in the CSV (used for filtering and time series)
+# (unchanged – still `date`)
 date_column: date
 
+# =========================
 # KPI cards to display on the dashboard
+# =========================
+
+# --- OLD (sales) METRICS ---
+# metrics:
+#   - id: total_revenue
+#     label: Total Revenue
+#     column: revenue
+#     aggregation: sum
+#     format: "$,.2f"
+#
+#   - id: total_units
+#     label: Total Units Sold
+#     column: units_sold
+#     aggregation: sum
+#     format: ",d"
+#
+#   - id: avg_order_value
+#     label: Avg Order Value
+#     numerator: revenue
+#     denominator: units_sold
+#     aggregation: ratio
+#     format: "$,.2f"
+
+# --- NEW (marketing) METRICS ---
 metrics:
+  - id: total_spend
+    label: Total Spend
+    column: spend
+    aggregation: sum
+    format: "$,.2f"
+
   - id: total_revenue
     label: Total Revenue
     column: revenue
     aggregation: sum
     format: "$,.2f"
 
-  - id: total_units
-    label: Total Units Sold
-    column: units_sold
+  - id: total_signups
+    label: Total Signups
+    column: signups
     aggregation: sum
-    format: ",d"
+    # format: ",d"          # OLD – integer-only, breaks on NaN
+    format: "0.0"           # NEW – generic numeric format, NaN-safe
 
-  - id: avg_order_value
-    label: Avg Order Value
+  - id: roas
+    label: ROAS (Revenue / Spend)
     numerator: revenue
-    denominator: units_sold
+    denominator: spend
     aggregation: ratio
-    format: "$,.2f"
+    # format: "0.00x"       # OLD – invalid for floats ("x" = hex)
+    format: "0.00"          # NEW – 2 decimal places, e.g. 3.27
 
+  - id: conversion_rate
+    label: Conversion Rate (Signups / Clicks)
+    numerator: signups
+    denominator: clicks
+    aggregation: ratio
+    format: "0.0%"
+
+# =========================
 # Charts to render (bar/line)
+# =========================
+
+# --- OLD (sales) CHARTS ---
+# charts:
+#   - id: revenue_over_time
+#     label: Revenue Over Time
+#     type: line
+#     x: date
+#     y: revenue
+#     aggregation: sum
+#
+#   - id: revenue_by_region
+#     label: Revenue by Region
+#     type: bar
+#     x: region
+#     y: revenue
+#     aggregation: sum
+
+# --- NEW (marketing) CHARTS ---
 charts:
   - id: revenue_over_time
     label: Revenue Over Time
@@ -36,14 +98,25 @@ charts:
     y: revenue
     aggregation: sum
 
-  - id: revenue_by_region
-    label: Revenue by Region
+  - id: revenue_by_channel
+    label: Revenue by Channel
     type: bar
-    x: region
+    x: channel
     y: revenue
     aggregation: sum
 
+  - id: signups_by_campaign
+    label: Signups by Campaign
+    type: bar
+    x: campaign
+    y: signups
+    aggregation: sum
+
+# =========================
 # Filters available in the UI
+# =========================
+
+# (unchanged – still one date range filter on `date`)
 filters:
   - id: date_range
     type: date_range

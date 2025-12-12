@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from typing import Any, Dict, List, Iterable
+import math
 
 import pandas as pd
 
@@ -46,15 +47,86 @@ def apply_filters(df: pd.DataFrame, config: Dict[str, Any], filters: Dict[str, A
     return result
 
 
-def _format_value(value: float, fmt: str | None) -> str:
+def _format_value(value, fmt):
+    """Format a numeric metric value according to a simple mini-DSL.
+
+    Supported formats:
+      - None           → plain str(value)
+      - ",d"           → thousands-separated integer (e.g. 1,234)
+      - "$,.2f" etc    → currency with thousands separator
+      - "0.0", "0.00"  → fixed decimal places (e.g. 9.2, 9.19)
+      - "0.0%"         → percentage (value is a ratio, e.g. 0.133 → "13.3%")
+      - "0.0x"         → multiplier (e.g. 9.2x)
+    Anything else falls back to str(value).
+    """
+    # Handle None / NaN safely
+    if value is None:
+        return "-"
+
+    if isinstance(value, (float, int)) and (
+        (isinstance(value, float) and math.isnan(value))
+        or (isinstance(value, float) and math.isinf(value))
+    ):
+        return "-"
+
     if fmt is None:
         return str(value)
-    # Very small formatter supporting a couple of patterns used in config
+
+    # Integer with thousands separators
     if fmt == ",d":
-        return f"{int(round(value)):,}"
-    if fmt == "$,.2f":
-        return f"${value:,.2f}"
-    return fmt.format(value) if "{" in fmt else str(value)
+        try:
+            return f"{int(round(value)):,}"
+        except Exception:
+            return "-"
+
+    # Currency, e.g. "$,.2f" (we only care about decimals)
+    if fmt.startswith("$"):
+        # default 2 decimal places
+        decimals = 2
+        if "." in fmt:
+            after_dot = fmt.split(".", 1)[1]
+            decimals = sum(ch.isdigit() for ch in after_dot)
+        try:
+            return f"${float(value):,.{decimals}f}"
+        except Exception:
+            return f"${value}"
+
+    def _decimals_from_pattern(pattern: str) -> int:
+        if "." not in pattern:
+            return 0
+        after = pattern.split(".", 1)[1]
+        return sum(ch.isdigit() for ch in after)
+
+    # Percentage formats like "0.0%" or "0.00%"
+    if fmt.endswith("%"):
+        core = fmt[:-1]
+        decimals = _decimals_from_pattern(core)
+        try:
+            pct = float(value) * 100.0
+            return f"{pct:.{decimals}f}%"
+        except Exception:
+            return str(value)
+
+    # Multiplier formats like "0.0x" or "0.00x"
+    if fmt.endswith("x"):
+        core = fmt[:-1]
+        decimals = _decimals_from_pattern(core)
+        try:
+            return f"{float(value):.{decimals}f}x"
+        except Exception:
+            return str(value)
+
+    # Bare numeric formats like "0.0" / "0.00"
+    if all(ch in "0.," or ch == "." for ch in fmt):
+        decimals = _decimals_from_pattern(fmt)
+        try:
+            return f"{float(value):.{decimals}f}"
+        except Exception:
+            return str(value)
+
+    # Fallback: just return str
+    return str(value)
+
 
 
 def compute_metrics(df: pd.DataFrame, metrics_cfg: Iterable[Dict[str, Any]], filters: Dict[str, Any], config: Dict[str, Any]) -> List[Dict[str, Any]]:

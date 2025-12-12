@@ -1,3 +1,4 @@
+
 # Create an Interactive Data Dashboard with Python: From Zero to Deployed in Minutes
 
 A minimal, configurable Flask + Pandas + vanilla JavaScript dashboard starter kit. Load a CSV, expose a JSON API, and render KPI cards and charts in the browser — no Plotly, no Streamlit, no heavy charting libraries.
@@ -15,7 +16,11 @@ This project shows how to build an interactive data dashboard from scratch using
 - **HTML/CSS** for layout and styling
 - **Vanilla JavaScript + SVG** for interactive charts (no charting frameworks)
 
-The key idea is transparency: you see the full flow from **CSV → Pandas → Flask routes → JSON → browser → DOM/SVG**, and you can extend the dashboard by editing a simple **YAML config file** instead of rewriting core code.
+The key idea is transparency: you see the full flow from
+
+> **CSV → Pandas → Flask routes → JSON → browser → DOM/SVG**
+
+and you can extend the dashboard by editing a simple **YAML config file** instead of rewriting core code.
 
 For a deeper walkthrough, see the PLEX article:
 
@@ -34,8 +39,10 @@ You can also follow Dorian’s broader writing on Medium:
   - Define metrics (KPI cards)
   - Define charts (bar/line) and their data sources
   - Define simple filters (e.g., date range)
-- **Sample dataset** (`data/sample_sales.csv`) with realistic sales data.
-- **JSON API** endpoints for metrics, charts, and config.
+- **Sample datasets** in `data/`:
+  - `sample_sales.csv` (baseline sales example)
+  - `marketing_campaign_performance.csv` (marketing campaign example)
+- **JSON API** endpoints for metrics, charts, and table rows.
 - **Vanilla JS frontend** that:
   - Fetches JSON from Flask
   - Renders KPI cards and a table
@@ -45,7 +52,7 @@ You can also follow Dorian’s broader writing on Medium:
   - Clean project structure
   - Example Dockerfile
   - Gunicorn command for deployment
-- **Easy to extend**: add new metrics or charts by editing the config file.
+- **Easy to extend**: add new metrics, charts, or datasets by editing config.
 
 ---
 
@@ -58,26 +65,26 @@ create-an-interactive-data-dashboard-with-python/
 │   ├── __init__.py                # App factory, config loading, blueprint registration
 │   ├── config_loader.py           # Load and validate dashboard config (YAML)
 │   ├── data.py                    # Pandas data loading and aggregation helpers
-│   └── routes.py                  # HTML view + JSON API endpoints
+│   ├── routes.py                  # HTML view + JSON API endpoints
+│   ├── static/
+│   │   ├── css/
+│   │   │   └── styles.css         # PLEX-style dashboard layout and theming
+│   │   └── js/
+│   │       └── dashboard.js       # Vanilla JS for fetching data and rendering UI + charts
+│   └── templates/
+│       ├── base.html              # Base HTML layout + header/footer
+│       └── dashboard.html         # Dashboard page template
 ├── config/
-│   └── dashboard.yml              # Config describing metrics, charts, and filters
+│   └── dashboard.yml              # Config describing data source, metrics, charts, filters
 ├── data/
-│   └── sample_sales.csv           # Small sample dataset for the dashboard
-├── static/
-│   ├── css/
-│   │   └── styles.css             # Basic responsive dashboard styling
-│   └── js/
-│       └── dashboard.js           # Vanilla JS for fetching data and rendering UI + charts
-├── templates/
-│   ├── base.html                  # Base HTML layout
-│   └── dashboard.html             # Dashboard page template
+│   ├── sample_sales.csv           # Original sales dataset
+│   └── marketing_campaign_performance.csv  # Marketing campaign dataset
 ├── tests/
 │   └── test_api.py                # Minimal tests for JSON API endpoints
-├── .env.example                   # Example environment variables
 ├── Dockerfile                     # Simple Docker image for deployment
 ├── requirements.txt               # Python dependencies
 └── README.md                      # Project documentation and quickstart
-```
+````
 
 ---
 
@@ -86,7 +93,7 @@ create-an-interactive-data-dashboard-with-python/
 High-level data flow:
 
 ```text
-CSV (data/sample_sales.csv)
+CSV (data/*.csv)
         │
         ▼
    Pandas DataFrame  (app/data.py)
@@ -98,18 +105,23 @@ CSV (data/sample_sales.csv)
    Flask JSON API (app/routes.py)
         │
         ▼
-   Browser fetch() calls (static/js/dashboard.js)
+   Browser fetch() calls (app/static/js/dashboard.js)
         │
         ▼
    DOM + SVG updates (cards, table, bar/line charts)
 ```
 
-- On startup, the app:
-  - Loads `config/dashboard.yml`.
-  - Loads `data/sample_sales.csv` into a Pandas DataFrame.
-- API endpoints use the config to compute metrics and chart data.
-- The frontend fetches `/api/config`, `/api/metrics`, and `/api/charts/<id>` and renders the UI dynamically.
-- Filters (e.g., date range) are passed as query parameters to the API and applied in Pandas.
+On startup, the app:
+
+1. Loads `config/dashboard.yml`.
+2. Loads the CSV defined by `data_source` into a Pandas DataFrame.
+3. Stores both the config and the DataFrame in `app.config`.
+
+API endpoints then:
+
+* Apply any filters (e.g. date range).
+* Compute metrics and chart series.
+* Return JSON the frontend can render.
 
 ---
 
@@ -117,8 +129,8 @@ CSV (data/sample_sales.csv)
 
 ### Prerequisites
 
-- Python **3.10+**
-- Git
+* Python **3.10+**
+* Git
 
 Optional (for deployment): Docker, Gunicorn.
 
@@ -134,12 +146,9 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
-
-# Copy environment example (optional)
-cp .env.example .env
 ```
 
-By default, the app will use `config/dashboard.yml` and `data/sample_sales.csv`.
+By default, the app will use `config/dashboard.yml` and whatever `data_source` you configure there.
 
 ---
 
@@ -155,64 +164,47 @@ source .venv/bin/activate  # or Windows equivalent
 python app.py
 ```
 
-Then open:
+By default this starts a development server on:
 
-- http://127.0.0.1:5000
+* [http://127.0.0.1:8509](http://127.0.0.1:8509)
 
-You should see a simple dashboard with:
+(or `http://<your-server-ip>:8509` if you’re running on a remote box).
 
-- KPI cards (e.g., Total Revenue, Total Units Sold)
-- A line chart of revenue over time
-- A bar chart of revenue by region
-- A table of recent rows
-- A date range filter that updates the metrics and charts
+You should see a dashboard with:
 
----
-
-## Usage Details
-
-### Environment variables
-
-The app reads a few optional environment variables (see `.env.example`):
-
-- `FLASK_ENV`: `development` or `production` (defaults to `development`).
-- `FLASK_DEBUG`: `1` or `0` (defaults to `1` in development).
-- `DASHBOARD_CONFIG_PATH`: override path to the dashboard config file.
-- `DASHBOARD_DATA_PATH`: override path to the CSV data file.
-
-You can set them in a `.env` file (if you use `python-dotenv`) or via your shell/hosting provider.
+* KPI cards
+* Line and bar charts
+* A “Recent rows” table
+* A date range filter that updates metrics and charts
 
 ---
 
 ## Configuration: `config/dashboard.yml`
 
-The dashboard is driven by a YAML config file. The default `config/dashboard.yml` looks like this (simplified):
+The dashboard is driven by a YAML config file. At the top you choose the dataset:
 
 ```yaml
-# config/dashboard.yml
-
+# Path to the CSV data source (relative to project root)
 data_source: data/sample_sales.csv
 
+# Name of the date column in the CSV (used for filtering and time series)
 date_column: date
+```
 
+Below that you define:
+
+* **metrics** → KPI cards
+* **charts**  → bar/line charts
+* **filters** → currently a date range
+
+Example (simplified):
+
+```yaml
 metrics:
   - id: total_revenue
     label: Total Revenue
     column: revenue
     aggregation: sum
-    format: "$,.2f"
-
-  - id: total_units
-    label: Total Units Sold
-    column: units_sold
-    aggregation: sum
-    format: ",d"
-
-  - id: avg_order_value
-    label: Avg Order Value
-    numerator: revenue
-    denominator: units_sold
-    aggregation: ratio
     format: "$,.2f"
 
 charts:
@@ -223,13 +215,6 @@ charts:
     y: revenue
     aggregation: sum
 
-  - id: revenue_by_region
-    label: Revenue by Region
-    type: bar
-    x: region
-    y: revenue
-    aggregation: sum
-
 filters:
   - id: date_range
     type: date_range
@@ -237,39 +222,271 @@ filters:
     column: date
 ```
 
-### Adding a new metric (card)
+### Metric `format` mini-DSL
 
-1. Open `config/dashboard.yml`.
-2. Add a new entry under `metrics`, for example:
+Metric values can be formatted using a small set of patterns. In `app/data.py`, `_format_value` supports:
 
-```yaml
-  - id: orders_count
-    label: Number of Orders
-    column: order_id
-    aggregation: nunique
-    format: ",d"
+* `",d"` → integer with thousands separators
+
+  * Example: `12345` → `12,345`
+* `"$,.2f"` → currency with thousands separators and 2 decimals
+
+  * Example: `12345.6` → `$12,345.60`
+* `"0.0"` / `"0.00"` → plain decimals
+
+  * Example: `9.1995` + `"0.0"` → `9.2`
+* `"0.0x"` / `"0.00x"` → multiplier
+
+  * Example: `3.27` + `"0.0x"` → `3.3x`
+* `"0.0%"` / `"0.00%"` → percentage (value is a ratio)
+
+  * Example: `0.1331` + `"0.0%"` → `13.3%`
+* Any unsupported pattern falls back to `str(value)`.
+
+If a value is `NaN` or `inf`, it will be rendered as `"-"` to avoid ugly output or crashes.
+
+---
+
+## How to Load a New Dataset (Step-by-Step)
+
+This is the key part of the tutorial: you should be able to swap datasets and reconfigure the dashboard without touching Python or JS.
+
+### 1. Drop your CSV into `data/`
+
+Example: we added a marketing dataset:
+
+```text
+data/
+├── sample_sales.csv
+└── marketing_campaign_performance.csv
 ```
 
-3. Restart the app (`python app.py`).
-4. The new KPI card will appear automatically on the dashboard.
+`marketing_campaign_performance.csv` looks like:
 
-### Adding a new chart
+```csv
+date,campaign,channel,spend,clicks,signups,revenue
+2025-01-01,Launch A,Search,420,950,120,3100
+2025-01-01,Launch A,Social,260,780,90,2100
+...
+```
 
-1. Add a new chart definition under `charts`, for example:
+### 2. Point the config at the new file
+
+In `config/dashboard.yml`, update `data_source`:
 
 ```yaml
-  - id: units_by_product
-    label: Units Sold by Product
+# OLD:
+# data_source: data/sample_sales.csv
+
+# NEW:
+data_source: data/marketing_campaign_performance.csv
+
+# Date column stays the same name in this dataset
+date_column: date
+```
+
+### 3. Update metrics to match new columns
+
+**Previous (sales) metrics**:
+
+```yaml
+# metrics:
+#   - id: total_revenue
+#     label: Total Revenue
+#     column: revenue
+#     aggregation: sum
+#     format: "$,.2f"
+#
+#   - id: total_units
+#     label: Total Units Sold
+#     column: units_sold
+#     aggregation: sum
+#     format: ",d"
+#
+#   - id: avg_order_value
+#     label: Avg Order Value
+#     numerator: revenue
+#     denominator: units_sold
+#     aggregation: ratio
+#     format: "$,.2f"
+```
+
+**New (marketing) metrics**:
+
+```yaml
+metrics:
+  - id: total_spend
+    label: Total Spend
+    column: spend
+    aggregation: sum
+    format: "$,.2f"
+
+  - id: total_revenue
+    label: Total Revenue
+    column: revenue
+    aggregation: sum
+    format: "$,.2f"
+
+  - id: total_signups
+    label: Total Signups
+    column: signups
+    aggregation: sum
+    format: ",d"
+
+  - id: roas
+    label: ROAS (Revenue / Spend)
+    numerator: revenue
+    denominator: spend
+    aggregation: ratio
+    format: "0.0x"      # e.g. 9.2x
+
+  - id: conversion_rate
+    label: Conversion Rate (Signups / Clicks)
+    numerator: signups
+    denominator: clicks
+    aggregation: ratio
+    format: "0.0%"      # e.g. 13.3%
+```
+
+> Tip: if you hit a `KeyError` in the logs, it usually means the `column`, `numerator`, or `denominator` name in YAML doesn’t exist in your CSV. Double-check spelling and case.
+
+### 4. Update charts to use the new schema
+
+**Previous charts**:
+
+```yaml
+# charts:
+#   - id: revenue_over_time
+#     label: Revenue Over Time
+#     type: line
+#     x: date
+#     y: revenue
+#     aggregation: sum
+#
+#   - id: revenue_by_region
+#     label: Revenue by Region
+#     type: bar
+#     x: region
+#     y: revenue
+#     aggregation: sum
+```
+
+**New marketing charts**:
+
+```yaml
+charts:
+  - id: revenue_over_time
+    label: Revenue Over Time
+    type: line
+    x: date
+    y: revenue
+    aggregation: sum
+
+  - id: spend_over_time
+    label: Spend Over Time
+    type: line
+    x: date
+    y: spend
+    aggregation: sum
+
+  - id: revenue_by_channel
+    label: Revenue by Channel
     type: bar
-    x: product
-    y: units_sold
+    x: channel
+    y: revenue
+    aggregation: sum
+
+  - id: signups_by_campaign
+    label: Signups by Campaign
+    type: bar
+    x: campaign
+    y: signups
     aggregation: sum
 ```
 
-2. Restart the app.
-3. The frontend will fetch `/api/charts/units_by_product` and render a new bar chart.
+The frontend reads this config from `/api/config`, creates one card per metric and one container per chart, and then calls the corresponding `/api/charts/<id>` endpoints. No JS changes required.
 
-The frontend is generic: it reads the config from `/api/config` and creates containers for each metric and chart, so you rarely need to touch `dashboard.js` when adding new items.
+### 5. Restart the app
+
+Whenever you change `dashboard.yml`:
+
+```bash
+python app.py
+```
+
+Refresh the browser; you should see the new KPIs and charts wired to your new dataset.
+
+---
+
+## How to Rename the Dashboard (Title, Subtitle, Branding)
+
+You can rename the project and tweak the UI copy without touching any Python.
+
+### 1. Change the HTML `<title>`
+
+Edit `app/templates/base.html` and look for the `<title>` tag:
+
+```html
+<head>
+  <title>FLASK + PANDAS DASHBOARD</title>
+  ...
+</head>
+```
+
+Replace it with your own title, for example:
+
+```html
+<title>Marketing Performance Dashboard · Flask + Pandas</title>
+```
+
+This controls the browser tab text and search snippet title.
+
+### 2. Update the header text
+
+In the same file (or in `dashboard.html`, depending on how you structured it), you’ll see something like:
+
+```html
+<header class="app-header">
+  <div class="app-header-inner">
+    <h1 class="app-title">FLASK + PANDAS DASHBOARD</h1>
+    <p class="app-subtitle">Interactive dashboard with vanilla JS charts</p>
+  </div>
+</header>
+```
+
+Update the copy:
+
+```html
+<h1 class="app-title">Marketing Performance Dashboard</h1>
+<p class="app-subtitle">
+  Track spend, revenue, and signups across campaigns with a pure Flask + Pandas stack.
+</p>
+```
+
+These strings are purely presentational; no backend code depends on them.
+
+### 3. (Optional) Tweak the styling to match your brand
+
+All layout and colours live in:
+
+* `app/static/css/styles.css`
+
+The palette is defined at the top as CSS variables:
+
+```css
+:root {
+  --lavender: #E3E3ED;
+  --atomic-tangerine: #EC793F;
+  --sandy-brown: #F2A066;
+  --sunlit-clay: #EAB467;
+  --soft-periwinkle: #A690F9;
+  --bright-lavender: #BA80E2;
+  --deep-lilac: #6F45BC;
+  ...
+}
+```
+
+You can adjust these values or override specific components (cards, charts, header) to match your project’s look and feel.
 
 ---
 
@@ -277,28 +494,27 @@ The frontend is generic: it reads the config from `/api/config` and creates cont
 
 Key modules:
 
-- `app/__init__.py`: creates the Flask app, loads config, and registers routes.
-- `app/config_loader.py`: loads and validates `dashboard.yml`.
-- `app/data.py`: loads the CSV into a Pandas DataFrame and exposes helper functions to compute metrics and chart data.
-- `app/routes.py`: defines routes:
-  - `/` → HTML dashboard page
-  - `/api/config` → dashboard config (for the frontend)
-  - `/api/metrics` → KPI metrics JSON
-  - `/api/charts/<chart_id>` → chart data JSON
+* `app/__init__.py`
 
-Example: using the data helpers in Python code:
+  * Creates the Flask app (`create_app()`), loads config and data, registers the blueprint.
+* `app/config_loader.py`
 
-```python
-from app.data import load_data, compute_metrics
-from app.config_loader import load_dashboard_config
+  * Loads and validates `config/dashboard.yml`.
+* `app/data.py`
 
-config = load_dashboard_config("config/dashboard.yml")
-df = load_data(config)
+  * `load_data(...)` → reads CSV into a DataFrame.
+  * `apply_filters(...)` → applies date range filters.
+  * `compute_metrics(...)` → calculates KPI metrics based on config.
+  * `compute_chart_data(...)` → calculates chart series from config.
+* `app/routes.py`
 
-metrics = compute_metrics(df, config["metrics"], filters={})
-for metric in metrics:
-    print(metric["id"], metric["value"])
-```
+  * `/` → HTML dashboard page
+  * `/api/config` → dashboard config (for the frontend)
+  * `/api/metrics` → KPI metrics JSON
+  * `/api/charts/<chart_id>` → chart data JSON
+  * `/api/table` → small “Recent rows” table JSON
+
+You can also import these helpers into your own scripts if you want to reuse the aggregation logic.
 
 ---
 
@@ -306,26 +522,31 @@ for metric in metrics:
 
 Templates:
 
-- `templates/base.html`: base layout and asset includes.
-- `templates/dashboard.html`: dashboard content area.
+* `app/templates/base.html` — shared layout (header, main, footer).
+* `app/templates/dashboard.html` — filters, cards, charts, and table.
 
 Static assets:
 
-- `static/css/styles.css`: simple responsive layout for header, filters, cards, charts, and table.
-- `static/js/dashboard.js`: main JS entrypoint.
+* `app/static/css/styles.css` — PLEX-style neumorphic dashboard design.
+* `app/static/js/dashboard.js` — main JS entrypoint.
 
-`dashboard.js` does the following:
+`dashboard.js`:
 
-1. On page load, fetches `/api/config` to know which metrics and charts to render.
-2. Builds the filter UI (date range inputs) based on config.
-3. Fetches `/api/metrics` and `/api/charts/<id>` with current filters.
-4. Renders:
-   - KPI cards as simple `<div>` elements.
-   - A table of recent rows.
-   - A **line chart** and **bar chart** using SVG elements created with `document.createElementNS`.
-5. Listens for filter changes and re-fetches data.
+1. Reads `window.DASHBOARD_CONFIG` (injected from Flask).
+2. Renders the filter controls (`start_date`, `end_date`, reset).
+3. Creates placeholder containers for each chart from the config.
+4. Calls:
 
-Because everything is vanilla JS, you can inspect and tweak the chart drawing logic directly.
+   * `/api/metrics`
+   * `/api/table`
+   * `/api/charts/<id>` for each chart
+5. Renders:
+
+   * KPI cards (`.card`)
+   * Table rows
+   * Line and bar charts using SVG primitives
+
+The chart colours and axis styling are set directly in `dashboard.js` and are tuned to match the CSS palette.
 
 ---
 
@@ -333,46 +554,64 @@ Because everything is vanilla JS, you can inspect and tweak the chart drawing lo
 
 All endpoints are defined in `app/routes.py`.
 
-- `GET /`
-  - Renders the main dashboard page.
+* `GET /`
 
-- `GET /api/config`
-  - Returns the parsed dashboard config (minus internal fields).
+  * Renders the main dashboard page.
 
-- `GET /api/metrics?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD`
-  - Returns a JSON object like:
+* `GET /api/config`
 
-```json
-{
-  "metrics": [
-    {"id": "total_revenue", "label": "Total Revenue", "value": 12345.67, "formatted": "$12,345.67"},
-    {"id": "total_units", "label": "Total Units Sold", "value": 987, "formatted": "987"}
-  ]
-}
-```
+  * Returns the parsed dashboard config (minus `data_source`).
 
-- `GET /api/charts/<chart_id>?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD`
-  - Returns chart data like:
+* `GET /api/metrics?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD`
 
-```json
-{
-  "id": "revenue_over_time",
-  "label": "Revenue Over Time",
-  "type": "line",
-  "points": [
-    {"x": "2024-01-01", "y": 1234.5},
-    {"x": "2024-01-02", "y": 2345.6}
-  ]
-}
-```
+  * Returns:
 
-The frontend uses these shapes to render charts.
+    ```json
+    {
+      "metrics": [
+        {
+          "id": "total_revenue",
+          "label": "Total Revenue",
+          "value": 45860.0,
+          "formatted": "$45,860.00"
+        },
+        ...
+      ]
+    }
+    ```
+
+* `GET /api/charts/<chart_id>?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD`
+
+  * Returns:
+
+    ```json
+    {
+      "id": "revenue_over_time",
+      "label": "Revenue Over Time",
+      "type": "line",
+      "points": [
+        {"x": "2025-01-01", "y": 7000.0},
+        {"x": "2025-01-02", "y": 6900.0}
+      ]
+    }
+    ```
+
+* `GET /api/table?...`
+
+  * Returns up to 50 recent rows as:
+
+    ```json
+    {
+      "rows": [
+        {"date": "2025-01-07", "campaign": "Brand Always-On", ...},
+        ...
+      ]
+    }
+    ```
 
 ---
 
 ## Running Tests
-
-This repo includes a minimal test to sanity-check the API.
 
 From the project root:
 
@@ -383,9 +622,9 @@ pytest
 
 `tests/test_api.py` will:
 
-- Create a test client
-- Hit `/api/metrics` and `/api/charts/revenue_over_time`
-- Assert that the responses are 200 and contain expected keys
+* Create a Flask test client
+* Hit `/api/metrics` and `/api/charts/<some_id>`
+* Assert that the responses are `200` and contain expected keys
 
 ---
 
@@ -393,12 +632,9 @@ pytest
 
 ### Gunicorn (recommended for production)
 
-Once your app is working locally, you can run it with Gunicorn:
-
 ```bash
 pip install gunicorn
 
-# From the project root
 gunicorn "app:create_app()" --bind 0.0.0.0:8000
 ```
 
@@ -406,66 +642,38 @@ Then visit `http://localhost:8000`.
 
 ### Docker
 
-A simple `Dockerfile` is included.
-
-Build and run:
-
 ```bash
 docker build -t flask-dashboard .
 docker run -p 8000:8000 flask-dashboard
 ```
 
-This will run the app with Gunicorn inside the container, listening on port 8000.
+The Docker image runs Gunicorn inside the container.
 
 ### PaaS (Render, Railway, etc.)
 
-Most PaaS providers can run a Gunicorn-based Flask app. Typical steps:
+1. Push this repo to your GitHub account.
 
-1. Push this repo to your own GitHub account.
-2. Create a new web service on your PaaS.
-3. Set the start command to something like:
+2. Create a new web service.
+
+3. Set the start command to:
 
    ```bash
    gunicorn "app:create_app()" --bind 0.0.0.0:$PORT
    ```
 
-4. Set environment variables (if needed) for `DASHBOARD_CONFIG_PATH` and `DASHBOARD_DATA_PATH`.
+4. Optionally set environment variables for `DASHBOARD_CONFIG_PATH` and `DASHBOARD_DATA_PATH`.
 
 ---
 
 ## Extending the Dashboard
 
-Here are some concrete ways to extend this baseline:
+Some ideas:
 
-1. **Swap the dataset**
-   - Replace `data/sample_sales.csv` with your own CSV.
-   - Update `data_source` and `date_column` in `config/dashboard.yml`.
-   - Adjust metrics and charts to match your column names.
-
-2. **Add new metrics and charts**
-   - Add entries under `metrics` and `charts` in `config/dashboard.yml`.
-   - Restart the app; the frontend will adapt automatically.
-
-3. **Connect to a database**
-   - Modify `app/data.py` to load data from a database instead of CSV.
-   - Keep the same interface (`load_data`, `compute_metrics`, `compute_chart_data`) so the rest of the app doesn’t change.
-
-4. **Add authentication**
-   - Wrap the `/` route and API routes with your preferred auth (Flask-Login, simple token check, reverse proxy auth, etc.).
-
-5. **Improve UI/UX**
-   - Enhance `static/css/styles.css` with your branding.
-   - Add more interactive elements in `static/js/dashboard.js` (tooltips, hover states, etc.).
-
----
-
-## Roadmap / Possible Extensions
-
-- Add support for more chart types (stacked bar, area) using the same SVG primitives.
-- Implement server-side caching for expensive aggregations.
-- Add pagination and sorting to the data table.
-- Provide an example of loading data from a SQL database.
-- Add a small CLI to generate a new dashboard project from this template.
+* Swap in your own CSV and build a domain-specific dashboard (finance, IoT, operations, etc.).
+* Add more charts (stacked bars, multi-series lines) using the same SVG primitives.
+* Plug in a SQL database instead of CSV.
+* Add authentication in front of `/` and `/api/*`.
+* Add pagination and sorting to the “Recent rows” table.
 
 ---
 
@@ -473,11 +681,11 @@ Here are some concrete ways to extend this baseline:
 
 This repo is explained in more detail in the PLEX article:
 
-> https://plexdata.online/post/create-an-interactive-data-dashboard-with-python-from-zero-to-deployed-in-minutes
+> [https://plexdata.online/post/create-an-interactive-data-dashboard-with-python-from-zero-to-deployed-in-minutes](https://plexdata.online/post/create-an-interactive-data-dashboard-with-python-from-zero-to-deployed-in-minutes)
 
 You can also follow Dorian’s broader writing on Medium:
 
-> https://medium.com/@doriansotpyrc
+> [https://medium.com/@doriansotpyrc](https://medium.com/@doriansotpyrc)
 
 Both the article and this repo are designed to be used together: read the article for the narrative and reasoning, and use this repo as a ready-made starting point for your own internal dashboards.
 
@@ -485,4 +693,6 @@ Both the article and this repo are designed to be used together: read the articl
 
 ## License
 
-This project is licensed under the **MIT License**. See the `LICENSE` file if present, or treat this notice as granting MIT terms.
+This project is licensed under the **MIT License**. Treat this notice as granting MIT terms if a separate `LICENSE` file is not present.
+
+
