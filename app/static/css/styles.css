@@ -51,7 +51,7 @@ body {
   color: var(--text-main);
 }
 
-/* Layout shell for the dashboard */
+/* Layout shell for the dashboard (base.html should wrap content inside app-shell/app-main) */
 .app-shell {
   min-height: 100vh;
   display: flex;
@@ -63,15 +63,9 @@ body {
   top: 0;
   z-index: 10;
   backdrop-filter: blur(18px);
-  background: linear-gradient(
-    135deg,
-    rgba(244, 244, 251, 0.98),
-    rgba(230, 228, 244, 0.95)
-  );
+  background: linear-gradient(135deg, var(--bg-elevated), var(--bg-main));
   border-bottom: 1px solid var(--outline-soft);
-  box-shadow:
-    -6px -6px 14px rgba(255, 255, 255, 0.9),
-    6px 6px 18px rgba(34, 22, 73, 0.16);
+  box-shadow: var(--shadow-soft);
 }
 
 .app-header-inner {
@@ -107,7 +101,7 @@ body {
 
 .app-footer {
   border-top: 1px solid var(--outline-soft);
-  background: rgba(244, 244, 251, 0.98);
+  background: var(--bg-elevated);
   padding: 1rem 1.25rem 1.4rem;
   text-align: center;
   font-size: 0.82rem;
@@ -146,10 +140,10 @@ body {
   border-radius: 0.9rem;
   border: 1px solid var(--outline-soft);
 
-  background: linear-gradient(145deg, #ffffff, #ecebff);
+  background: linear-gradient(145deg, #ffffff, var(--bg-main));
   box-shadow:
     -2px -2px 5px rgba(255, 255, 255, 0.9),
-    2px 2px 6px rgba(34, 22, 73, 0.12);
+    2px 2px 6px rgba(30, 26, 48, 0.12);
 
   font-size: 0.9rem;
   color: var(--text-main);
@@ -158,10 +152,10 @@ body {
 
 .filter-group input[type="date"]:focus,
 .filter-group select:focus {
-  border-color: rgba(166, 144, 249, 0.9);
+  border-color: var(--soft-periwinkle);
   box-shadow:
     -3px -3px 6px rgba(255, 255, 255, 0.95),
-    3px 3px 9px rgba(34, 22, 73, 0.2);
+    3px 3px 9px rgba(30, 26, 48, 0.18);
 }
 
 .filter-group--button button {
@@ -204,28 +198,13 @@ body {
 }
 
 .card {
-  position: relative;
   border-radius: var(--radius-lg);
   padding: 0.95rem 1.05rem;
   background: var(--bg-elevated);
   box-shadow:
     -6px -6px 14px rgba(255, 255, 255, 0.9),
-    6px 6px 18px rgba(23, 17, 52, 0.24);
+    6px 6px 18px rgba(23, 17, 52, 0.18);
   border: 1px solid var(--outline-soft);
-}
-
-.card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(
-    circle at top left,
-    rgba(186, 128, 226, 0.25),
-    transparent 55%
-  );
-  opacity: 0.4;
-  pointer-events: none;
 }
 
 .card-label {
@@ -252,10 +231,12 @@ body {
 .chart {
   border-radius: var(--radius-lg);
   padding: 0.9rem 1rem 1rem;
-  background: radial-gradient(circle at 0 0, #ffffff, #e6e4ff);
+  background:
+    radial-gradient(circle at 0 0, rgba(166, 144, 249, 0.18), transparent 60%),
+    var(--bg-elevated);
   box-shadow:
     -6px -6px 14px rgba(255, 255, 255, 0.96),
-    6px 6px 18px rgba(23, 17, 52, 0.26);
+    6px 6px 18px rgba(23, 17, 52, 0.22);
   border: 1px solid var(--outline-soft);
 }
 
@@ -284,10 +265,10 @@ body {
   overflow-x: auto;
   border-radius: var(--radius-lg);
   border: 1px solid var(--outline-soft);
-  background: linear-gradient(135deg, #ffffff, #ebe9ff);
+  background: linear-gradient(135deg, #ffffff, var(--lavender));
   box-shadow:
     -4px -4px 8px rgba(255, 255, 255, 0.9),
-    4px 4px 10px rgba(34, 22, 73, 0.16);
+    4px 4px 10px rgba(23, 17, 52, 0.16);
 }
 
 #data-table {
@@ -297,7 +278,7 @@ body {
 }
 
 #data-table thead {
-  background: rgba(166, 144, 249, 0.12);
+  background: rgba(166, 144, 249, 0.12); /* soft-periwinkle tint */
 }
 
 #data-table th,
@@ -318,7 +299,7 @@ body {
 }
 
 #data-table tbody tr:nth-child(even) {
-  background: rgba(244, 244, 251, 0.8);
+  background: var(--bg-main);
 }
 
 #data-table tbody tr:nth-child(odd) {
@@ -326,7 +307,7 @@ body {
 }
 
 #data-table tbody tr:hover {
-  background: rgba(230, 228, 244, 0.9);
+  background: rgba(166, 144, 249, 0.12);
 }
 
 /* Responsive tweaks */
@@ -344,4 +325,34 @@ body {
   #data-table td {
     white-space: normal;
   }
+}
+
+/* ======================
+   PLEX chart styling
+   ====================== */
+
+.chart .chart-axis-line {
+  stroke: rgba(154, 151, 182, 0.9); /* text-subtle */
+  stroke-width: 1.1;
+}
+
+.chart .chart-axis-label {
+  fill: var(--text-subtle);
+  font-size: 10px;
+}
+
+.chart path.chart-line-primary {
+  fill: none;
+  stroke: var(--soft-periwinkle);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.chart circle.chart-point {
+  fill: var(--bright-lavender);
+}
+
+.chart rect.chart-bar-primary {
+  fill: var(--atomic-tangerine);
 }

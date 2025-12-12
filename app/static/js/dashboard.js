@@ -18,7 +18,8 @@
   }
 
   async function fetchJSON(url, params) {
-    const fullUrl = params && params.toString() ? `${url}?${params.toString()}` : url;
+    const fullUrl =
+      params && params.toString() ? `${url}?${params.toString()}` : url;
     const res = await fetch(fullUrl);
     if (!res.ok) {
       throw new Error(`Request failed: ${res.status}`);
@@ -104,11 +105,17 @@
     const yMax = Math.max(...ys) || 1;
 
     function xScale(x) {
-      return padding + ((width - 2 * padding) * (x - xMin)) / (xMax - xMin || 1);
+      return (
+        padding + ((width - 2 * padding) * (x - xMin)) / (xMax - xMin || 1)
+      );
     }
 
     function yScale(y) {
-      return height - padding - ((height - 2 * padding) * (y - yMin)) / (yMax - yMin || 1);
+      return (
+        height -
+        padding -
+        ((height - 2 * padding) * (y - yMin)) / (yMax - yMin || 1)
+      );
     }
 
     const svgNS = "http://www.w3.org/2000/svg";
@@ -119,8 +126,7 @@
     xAxis.setAttribute("y1", height - padding);
     xAxis.setAttribute("x2", width - padding);
     xAxis.setAttribute("y2", height - padding);
-    xAxis.setAttribute("stroke", "#4b5563");
-    xAxis.setAttribute("stroke-width", "1");
+    xAxis.setAttribute("class", "chart-axis-line");
     svg.appendChild(xAxis);
 
     const yAxis = document.createElementNS(svgNS, "line");
@@ -128,8 +134,7 @@
     yAxis.setAttribute("y1", padding);
     yAxis.setAttribute("x2", padding);
     yAxis.setAttribute("y2", height - padding);
-    yAxis.setAttribute("stroke", "#4b5563");
-    yAxis.setAttribute("stroke-width", "1");
+    yAxis.setAttribute("class", "chart-axis-line");
     svg.appendChild(yAxis);
 
     // Line path
@@ -142,12 +147,10 @@
 
     const path = document.createElementNS(svgNS, "path");
     path.setAttribute("d", d);
-    path.setAttribute("fill", "none");
-    path.setAttribute("stroke", "#60a5fa");
-    path.setAttribute("stroke-width", "2");
+    path.setAttribute("class", "chart-line-primary");
     svg.appendChild(path);
 
-    // Dots
+    // Points
     points.forEach((p, i) => {
       const cx = xScale(xs[i]);
       const cy = yScale(p.y);
@@ -155,7 +158,7 @@
       circle.setAttribute("cx", cx);
       circle.setAttribute("cy", cy);
       circle.setAttribute("r", "3");
-      circle.setAttribute("fill", "#93c5fd");
+      circle.setAttribute("class", "chart-point");
       svg.appendChild(circle);
     });
 
@@ -182,13 +185,13 @@
 
     const svgNS = "http://www.w3.org/2000/svg";
 
+    // Axes
     const xAxis = document.createElementNS(svgNS, "line");
     xAxis.setAttribute("x1", padding);
     xAxis.setAttribute("y1", height - padding);
     xAxis.setAttribute("x2", width - padding);
     xAxis.setAttribute("y2", height - padding);
-    xAxis.setAttribute("stroke", "#4b5563");
-    xAxis.setAttribute("stroke-width", "1");
+    xAxis.setAttribute("class", "chart-axis-line");
     svg.appendChild(xAxis);
 
     const yAxis = document.createElementNS(svgNS, "line");
@@ -196,16 +199,16 @@
     yAxis.setAttribute("y1", padding);
     yAxis.setAttribute("x2", padding);
     yAxis.setAttribute("y2", height - padding);
-    yAxis.setAttribute("stroke", "#4b5563");
-    yAxis.setAttribute("stroke-width", "1");
+    yAxis.setAttribute("class", "chart-axis-line");
     svg.appendChild(yAxis);
 
     const barAreaWidth = width - 2 * padding;
-    const barWidth = barAreaWidth / points.length * 0.7;
+    const barWidth = (barAreaWidth / points.length) * 0.7;
 
     points.forEach((p, i) => {
       const xCenter = padding + (barAreaWidth * (i + 0.5)) / points.length;
-      const barHeight = ((height - 2 * padding) * (p.y - yMin)) / (yMax - yMin || 1);
+      const barHeight =
+        ((height - 2 * padding) * (p.y - yMin)) / (yMax - yMin || 1);
       const x = xCenter - barWidth / 2;
       const y = height - padding - barHeight;
 
@@ -214,7 +217,9 @@
       rect.setAttribute("y", y);
       rect.setAttribute("width", barWidth);
       rect.setAttribute("height", barHeight);
-      rect.setAttribute("fill", "#34d399");
+      rect.setAttribute("rx", "4");
+      rect.setAttribute("ry", "4");
+      rect.setAttribute("class", "chart-bar-primary");
       svg.appendChild(rect);
 
       // X labels
@@ -222,8 +227,7 @@
       label.setAttribute("x", xCenter);
       label.setAttribute("y", height - padding + 12);
       label.setAttribute("text-anchor", "middle");
-      label.setAttribute("font-size", "9");
-      label.setAttribute("fill", "#9ca3af");
+      label.setAttribute("class", "chart-axis-label");
       label.textContent = p.x;
       svg.appendChild(label);
     });
@@ -268,8 +272,13 @@
       // Fetch each chart individually
       const charts = (config.charts || []).slice();
       for (const chartCfg of charts) {
-        const data = await fetchJSON(`/api/charts/${encodeURIComponent(chartCfg.id)}`, params);
-        const canvas = chartsContainer.querySelector(`.chart-canvas[data-chart-id="${chartCfg.id}"]`);
+        const data = await fetchJSON(
+          `/api/charts/${encodeURIComponent(chartCfg.id)}`,
+          params
+        );
+        const canvas = chartsContainer.querySelector(
+          `.chart-canvas[data-chart-id="${chartCfg.id}"]`
+        );
         if (!canvas) continue;
         if (data.type === "line") {
           renderLineChart(canvas, data);
@@ -283,7 +292,9 @@
   }
 
   function initFilters() {
-    const dateFilterCfg = (config.filters || []).find((f) => f.id === "date_range");
+    const dateFilterCfg = (config.filters || []).find(
+      (f) => f.id === "date_range"
+    );
     if (!dateFilterCfg) return;
 
     function onChange() {
