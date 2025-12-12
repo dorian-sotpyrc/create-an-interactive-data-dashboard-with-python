@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Flask + Pandas Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="app-header-inner">
+        <h1 class="app-title">Flask + Pandas Dashboard</h1>
+        <p class="app-subtitle">Interactive dashboard with vanilla JS charts</p>
+      </div>
+    </header>
+
+    <main class="app-main">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="app-footer">
+      <p>
+        Built for the PLEX tutorial on creating an interactive data dashboard with Python.
+      </p>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

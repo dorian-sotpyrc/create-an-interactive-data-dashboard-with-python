@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard · Flask + Pandas{% endblock %}
+
+{% block content %}
+<section class="filters" id="filters">
+  <div class="filter-group" id="date-filter-group">
+    <label for="start-date">Start date</label>
+    <input type="date" id="start-date" />
+  </div>
+  <div class="filter-group">
+    <label for="end-date">End date</label>
+    <input type="date" id="end-date" />
+  </div>
+  <div class="filter-group filter-group--button">
+    <button id="reset-filters">Reset</button>
+  </div>
+</section>
+
+<section class="cards" id="cards"></section>
+
+<section class="charts" id="charts"></section>
+
+<section class="table-section">
+  <h2>Recent Rows</h2>
+  <div class="table-wrapper">
+    <table id="data-table">
+      <thead id="table-head"></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.DASHBOARD_CONFIG = {{ config | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

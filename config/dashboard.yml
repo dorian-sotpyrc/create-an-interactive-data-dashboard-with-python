@@ -1,0 +1,51 @@
+# Dashboard configuration file
+
+# Path to the CSV data source (relative to project root by default)
+data_source: data/sample_sales.csv
+
+# Name of the date column in the CSV (used for filtering and time series)
+date_column: date
+
+# KPI cards to display on the dashboard
+metrics:
+  - id: total_revenue
+    label: Total Revenue
+    column: revenue
+    aggregation: sum
+    format: "$,.2f"
+
+  - id: total_units
+    label: Total Units Sold
+    column: units_sold
+    aggregation: sum
+    format: ",d"
+
+  - id: avg_order_value
+    label: Avg Order Value
+    numerator: revenue
+    denominator: units_sold
+    aggregation: ratio
+    format: "$,.2f"
+
+# Charts to render (bar/line)
+charts:
+  - id: revenue_over_time
+    label: Revenue Over Time
+    type: line
+    x: date
+    y: revenue
+    aggregation: sum
+
+  - id: revenue_by_region
+    label: Revenue by Region
+    type: bar
+    x: region
+    y: revenue
+    aggregation: sum
+
+# Filters available in the UI
+filters:
+  - id: date_range
+    type: date_range
+    label: Date Range
+    column: date
