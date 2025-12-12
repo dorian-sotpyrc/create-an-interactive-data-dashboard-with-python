@@ -483,12 +483,6 @@ Both the article and this repo are designed to be used together: read the articl
 
 ---
 
-## SEO Keywords
-
-Flask dashboard tutorial, Python interactive dashboard, Flask Pandas dashboard, build dashboard with Flask and Pandas, Python data dashboard from scratch, vanilla JavaScript data visualization, Flask JSON API for dashboard, deploy Flask dashboard, configurable Python dashboard, simple data dashboard without Plotly, Flask HTML template dashboard, CSV to dashboard Python
-
----
-
 ## License
 
 This project is licensed under the **MIT License**. See the `LICENSE` file if present, or treat this notice as granting MIT terms.
